@@ -6,6 +6,7 @@
 #line 130 plot interpolation
 #line 190 create constants
 #line 244 initial conditions
+#line 261 define power function
 #line 281 model definition
 #line 594 solve the model
 #line 646 plot the solution
@@ -432,8 +433,8 @@ def hp_model1(t,y):
 
     
 
-#Old model with temperature dependent parameters
-def hp_modelOLD(t,y):
+#model with temperature dependent parameters
+def hp_modelTdependent(t,y):
     
     #for more clarity in the equation i save y vector in variables with clearer name
     Tpe = y[0] #pipe evaporator temperature
@@ -599,11 +600,15 @@ import time #required to measure the simulation time
 
 #TIME SPAN
 tt = [0,600]
+#TIMESTEPS
+Nsteps = 5000
+tsteps = None#np.linspace(tt[0],tt[-1],Nsteps)
+
 
 #SOLVE THE MODEL - Radau
 st = time.time() #measure the starting time
 
-solution = solve_ivp(hp_model1,t_span = tt, y0 = y0 ,method='Radau')
+solution = solve_ivp(hp_model1,t_span = tt, t_eval  = tsteps, y0 = y0 ,method='Radau')
 et = time.time() #measure the final time
 
 print("simulation time Radau:", round(et-st,4)) #print the simulation duration in seconds
@@ -617,7 +622,7 @@ y_rad = solution.y
 #SOLVE THE MODEL - BDF
 
 st = time.time()
-solution = solve_ivp(hp_model1,t_span = tt, y0 = y0 ,method='BDF')
+solution = solve_ivp(hp_model1,t_span = tt, t_eval  = tsteps, y0 = y0 ,method='BDF')
 et = time.time()
 
 print("simulation time BDF:", round(et-st,4))
@@ -629,7 +634,7 @@ y_bdf = solution.y
 #SOLVE THE MODEL - LSODA
 
 st = time.time()
-solution = solve_ivp(hp_model1,t_span = tt, y0 = y0 ,method='LSODA')
+solution = solve_ivp(hp_model1,t_span = tt, t_eval  = tsteps, y0 = y0 ,method='LSODA')
 et = time.time()
 
 print("simulation time LSODA:", round(et-st,4))
