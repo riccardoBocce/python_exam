@@ -10,18 +10,21 @@
 #line 281 model definition
 #line 594 solve the model
 #line 646 plot the solution
+
+
+
+
 import pandas as pd
+
+def readExcel(filename):
+    return pd.ExcelFile(filename).parse("Sheet1")
 
 ####################################################
 #IMPORT THERMOPHYSICAL PROPERTIES
 ####################################################
 filename_fluid = "water.xlsx" #Change here the fluid
 
-thermophys_data = pd.ExcelFile(filename_fluid)
-#print(type(thermophys_data))
-
-thermophys_data = thermophys_data.parse("Sheet1") #overwrite to get a DataFrame
-#print(type(thermophys_data))
+thermophys_data = readExcel(filename_fluid)
 
 
 ####################################################
@@ -29,11 +32,7 @@ thermophys_data = thermophys_data.parse("Sheet1") #overwrite to get a DataFrame
 ####################################################
 filename_hp = "heat_pipe_specs.xlsx" #heat pipe data specification
 
-hp_data = pd.ExcelFile(filename_hp)
-#print(type(hp_data))
-
-hp_data = hp_data.parse("Sheet1") #overwrite to get a DataFrame
-#print(type(hp_data))
+hp_data = readExcel(filename_hp)
 
 
 ####################################################
@@ -41,11 +40,11 @@ hp_data = hp_data.parse("Sheet1") #overwrite to get a DataFrame
 ####################################################
 filename_par = "parameters.xlsx" #thermal parameters specification
 
-parameters_data = pd.ExcelFile(filename_par)
-#print(type(hp_data))
+parameters_data = readExcel(filename_par)
 
-parameters_data = parameters_data.parse("Sheet1") #overwrite to get a DataFrame
-#print(type(parameters_data))
+
+
+
 
 
 ####################################################
@@ -766,3 +765,5 @@ axs[1].legend()
 axs[2].legend()
 
 plt.tight_layout()
+
+plt.show()
