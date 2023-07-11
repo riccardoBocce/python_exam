@@ -1,6 +1,6 @@
 #INDEX:
-#line 15:import thermophysical data
-#line 27 import heat pipe data
+#line 23:import thermophysical data
+#line 31 import heat pipe data
 #line 39 import input/output initial condition
 #line 51 interpolation
 #line 130 plot interpolation
@@ -11,9 +11,9 @@
 #line 594 solve the model
 #line 646 plot the solution
 
-
-
-
+####################################################
+#DEFINE FUNCTION FOR READING FILES
+####################################################
 import pandas as pd
 
 def readExcel(filename):
@@ -263,13 +263,13 @@ def Qin(t):
 
 
 #create a time vector for plot
-tt = np.linspace(0,500,1000)
+time_for_q = np.linspace(0,500,1000)
 
 #create power vector for plot
-Qin_plt = Qin(tt)
+Qin_plt = Qin(time_for_q)
 
 fig, ax = plt.subplots()
-ax.plot(tt,Qin_plt)
+ax.plot(time_for_q,Qin_plt)
 ax.set_ylabel("Power (W)")
 ax.set_xlabel("time (s)")
 ax.set_title("Input power transient")
@@ -596,13 +596,11 @@ def hp_modelTdependent(t,y):
 from scipy.integrate import solve_ivp
 import time #required to measure the simulation time
 
-
 #TIME SPAN
 tt = [0,600]
 #TIMESTEPS
 Nsteps = 5000
 tsteps = None#np.linspace(tt[0],tt[-1],Nsteps)
-
 
 #SOLVE THE MODEL - Radau
 st = time.time() #measure the starting time
