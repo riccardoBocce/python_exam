@@ -2,14 +2,14 @@
 #line 23:import thermophysical data
 #line 31 import heat pipe data
 #line 39 import input/output initial condition
-#line 51 interpolation
-#line 130 plot interpolation
-#line 190 create constants
-#line 244 initial conditions
-#line 261 define power function
-#line 281 model definition
-#line 594 solve the model
-#line 646 plot the solution
+#line 47 interpolation
+#line 81 plot interpolation
+#line 141 create constants
+#line 195 initial conditions
+#line 210 define power function
+#line 233 model definition
+#line 546 solve the model
+#line 598 plot the solution
 
 ####################################################
 #DEFINE FUNCTION FOR READING FILES
@@ -43,20 +43,13 @@ filename_par = "parameters.xlsx" #thermal parameters specification
 parameters_data = readExcel(filename_par)
 
 
-
-
-
-
 ####################################################
 #INTERPOLATION
 ####################################################
 import numpy as np
-from numpy.polynomial import Polynomial
 from scipy import interpolate
 
-
 interpolation_method = "linear"
-
 
 #extract data from DataFrame to arrays
 
@@ -66,64 +59,22 @@ temperature_for_fit = temperature_for_fit.tolist() #convert to list
 temperature_for_fit = np.array([temperature_for_fit[0]-100] +  temperature_for_fit + [temperature_for_fit[-1]+100]) #extend and convert to an array
 
 
-#poly_deg = 4 #degree of the polynomial
-
-
 #Fit all the required parameters
+def getAndInterpolate(data_for_fit):  
+    data_for_fit = np.array([data_for_fit[0]] + data_for_fit + [data_for_fit[-1]])
+    return interpolate.interp1d(temperature_for_fit, data_for_fit ,kind = interpolation_method) , data_for_fit
 
-#pressure_for_fit = thermophys_data["Saturation pressure (Pa)"].values
-#p_sat = Polynomial.fit(temperature_for_fit, pressure_for_fit,poly_deg) #note that np.polyfit is now legacy
-p_sat_for_fit = thermophys_data["Saturation pressure (Pa)"].values
-p_sat_for_fit = p_sat_for_fit.tolist() #convert in list
-p_sat_for_fit = np.array([p_sat_for_fit[0]] + p_sat_for_fit + [p_sat_for_fit[-1]]) #duplicate first and last elements
+p_sat, p_sat_for_fit = getAndInterpolate((thermophys_data["Saturation pressure (Pa)"].values).tolist())
+hlv_sat, latentheat_for_fit = getAndInterpolate((thermophys_data["Latent heat (kJ/kg)"].values*1e3).tolist())
+rhol_sat, liquiddensity_for_fit = getAndInterpolate(thermophys_data["Liquid density (kg/m3)"].values.tolist())
+rhov_sat, vapordensity_for_fit = getAndInterpolate(thermophys_data["Vapor density (kg/m3)"].values.tolist())
+mul_sat, liquidviscosity_for_fit = getAndInterpolate(thermophys_data["Liquid viscosity (N-s/m2)"].values.tolist())
+muv_sat, vaporviscosity_for_fit = getAndInterpolate(thermophys_data["Vapor viscosity (N-s/m2)"].values.tolist())
+kl_sat, liquidconductivity_for_fit = getAndInterpolate(thermophys_data["Liquid thermal conductivity (W/m-K)"].values.tolist())
+sigma_sat, liquidtension_for_fit = getAndInterpolate(thermophys_data["Liquid surface tension (N/m)"].values.tolist())
+cl_sat, liquidcapacity_for_fit = getAndInterpolate((thermophys_data["Liquid specific heat (kJ/kg-K)"].values*1e3).tolist())
 
-p_sat = interpolate.interp1d(temperature_for_fit, p_sat_for_fit,kind = interpolation_method) 
-
-
-latentheat_for_fit = thermophys_data["Latent heat (kJ/kg)"].values
-latentheat_for_fit = latentheat_for_fit.tolist() #convert in list
-latentheat_for_fit = np.array([latentheat_for_fit[0]] + latentheat_for_fit + [latentheat_for_fit[-1]])*1e3 #duplicate first and last elements
-
-
-#hlv_sat = Polynomial.fit(temperature_for_fit, latentheat_for_fit,poly_deg) 
-hlv_sat = interpolate.interp1d(temperature_for_fit, latentheat_for_fit,kind = interpolation_method) 
-
-liquiddensity_for_fit = thermophys_data["Liquid density (kg/m3)"].values.tolist()
-liquiddensity_for_fit = np.array([liquiddensity_for_fit[0]] + liquiddensity_for_fit + [liquiddensity_for_fit[-1]])
-#rhol_sat = Polynomial.fit(temperature_for_fit, liquiddensity_for_fit,poly_deg) 
-rhol_sat =  interpolate.interp1d(temperature_for_fit, liquiddensity_for_fit,kind = interpolation_method) 
-
-vapordensity_for_fit = thermophys_data["Vapor density (kg/m3)"].values.tolist()
-vapordensity_for_fit = np.array([vapordensity_for_fit[0]] + vapordensity_for_fit + [vapordensity_for_fit[-1]])
-#rhov_sat = Polynomial.fit(temperature_for_fit, vapordensity_for_fit,poly_deg) 
-rhov_sat = interpolate.interp1d(temperature_for_fit, vapordensity_for_fit,kind= interpolation_method) 
-
-liquidviscosity_for_fit = thermophys_data["Liquid viscosity (N-s/m2)"].values.tolist()
-liquidviscosity_for_fit = np.array([liquidviscosity_for_fit[0]] + liquidviscosity_for_fit + [liquidviscosity_for_fit[-1]])
-#mul_sat = Polynomial.fit(temperature_for_fit, liquidviscosity_for_fit,poly_deg) 
-mul_sat = interpolate.interp1d(temperature_for_fit, liquidviscosity_for_fit,kind = interpolation_method) 
-
-vaporviscosity_for_fit = thermophys_data["Vapor viscosity (N-s/m2)"].values.tolist()
-vaporviscosity_for_fit = np.array([vaporviscosity_for_fit[0]] + vaporviscosity_for_fit + [vaporviscosity_for_fit[-1]])
-#muv_sat = Polynomial.fit(temperature_for_fit, vaporviscosity_for_fit,poly_deg) 
-muv_sat = interpolate.interp1d(temperature_for_fit, vaporviscosity_for_fit,kind=interpolation_method) 
-
-liquidconductivity_for_fit = thermophys_data["Liquid thermal conductivity (W/m-K)"].values.tolist()
-liquidconductivity_for_fit = np.array([liquidconductivity_for_fit[0]] + liquidconductivity_for_fit + [liquidconductivity_for_fit[-1]])
-#kl_sat = Polynomial.fit(temperature_for_fit, liquidconductivity_for_fit,poly_deg) 
-kl_sat = interpolate.interp1d(temperature_for_fit, liquidconductivity_for_fit,kind=interpolation_method)
-
-liquidtension_for_fit = thermophys_data["Liquid surface tension (N/m)"].values.tolist()
-liquidtension_for_fit = np.array([liquidtension_for_fit[0]] + liquidtension_for_fit + [liquidtension_for_fit[-1]])
-#sigma_sat = Polynomial.fit(temperature_for_fit, liquidtension_for_fit,poly_deg) 
-sigma_sat = interpolate.interp1d(temperature_for_fit, liquidtension_for_fit,kind = interpolation_method)
-
-liquidcapacity_for_fit = (thermophys_data["Liquid specific heat (kJ/kg-K)"].values*1e3).tolist()
-liquidcapacity_for_fit = np.array([liquidcapacity_for_fit[0]] + liquidcapacity_for_fit + [liquidcapacity_for_fit[-1]])
-#cl_sat = Polynomial.fit(temperature_for_fit, liquidcapacity_for_fit,poly_deg) 
-cl_sat = interpolate.interp1d(temperature_for_fit, liquidcapacity_for_fit,kind = interpolation_method) 
-
-
+#define a temperature array for the plot of interpolation functions
 temperature_for_plot = np.linspace(temperature_for_fit[0],temperature_for_fit[-1], 1000)
 
 ####################################################
@@ -190,7 +141,7 @@ fig.tight_layout() #adjust space between subplots, minimize overlap
 #CREATE THE CONSTANTS REQUIRED BY THE MODEL
 ####################################################
 R = 8.314/(18e-3) #perfect gas reduced constant
-gamma = 1.33      #cp/cv
+gamma = float(parameters_data["gamma"].values)      #cp/cv
 
 
 #SOLID PROPERTIES
@@ -258,8 +209,9 @@ y0 = [T0,T0,T0,T0,T0,T0,0,pve0,pvc0,T0,T0,Mle_0,0*Mlc_0]
 ####################################################
 #DEFINE THE INPUT POWER FUNCTION
 ####################################################
+tau = 90
 def Qin(t):
-    return Qin0*(1-np.exp(-t/90))
+    return Qin0*(1-np.exp(-t/tau))
 
 
 #create a time vector for plot
@@ -617,7 +569,6 @@ y_rad = solution.y
 
 
 #SOLVE THE MODEL - BDF
-
 st = time.time()
 solution = solve_ivp(hp_model1,t_span = tt, t_eval  = tsteps, y0 = y0 ,method='BDF')
 et = time.time()
@@ -629,7 +580,6 @@ t_bdf = solution.t
 y_bdf = solution.y
 
 #SOLVE THE MODEL - LSODA
-
 st = time.time()
 solution = solve_ivp(hp_model1,t_span = tt, t_eval  = tsteps, y0 = y0 ,method='LSODA')
 et = time.time()
